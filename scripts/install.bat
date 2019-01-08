@@ -8,3 +8,4 @@ pip install numpy
 pip install pytest pytest-cov pytest-rerunfailures
 pip install .
 pip list --format=columns
+dir
