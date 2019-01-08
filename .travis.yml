@@ -18,9 +18,6 @@ matrix:
     language: generic
     env: PYTHON_VERSION=3.6.7
 
-before_install:
-  - ./scripts/before_install.sh
-
 install:
   - ./scripts/install.sh
 
