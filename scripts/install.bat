@@ -1,5 +1,5 @@
 nuget install secure-file -ExcludeVersion
-secure-file\tools\secure-file -decrypt parameters.appveyor.py.enc -secret %my_secret% -out parameters.appveyor.py
+secure-file\tools\secure-file -decrypt parameters.appveyor.py.enc -secret %my_secret% -out parameters.py
 
 "%PYTHON%/python.exe" -m venv env
 call env\Scripts\activate
@@ -8,4 +8,3 @@ pip install numpy
 pip install pytest pytest-cov pytest-rerunfailures
 pip install .
 pip list --format=columns
-
