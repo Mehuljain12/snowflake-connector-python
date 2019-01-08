@@ -404,7 +404,7 @@ def test_franction_followed_by_year_format(conn_cnx):
         cnx.cursor().execute("""
 ALTER SESSION SET
     TIMESTAMP_OUTPUT_FORMAT='HH24:MI:SS.FF6 MON DD, YYYY',
-    TIMESTAMP_NTZ_OUTPUT_FORMAT='HH24:MI:SS.FF6 MON DD, YYYY'    
+    TIMESTAMP_NTZ_OUTPUT_FORMAT='HH24:MI:SS.FF6 MON DD, YYYY'
 """)
         for rec in cnx.cursor().execute("""
 SELECT
