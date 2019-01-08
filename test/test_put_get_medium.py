@@ -10,8 +10,10 @@ import random
 import shutil
 import string
 import sys
+import tempfile
 import time
 from logging import getLogger
+from os import path
 
 import pytest
 import pytz
@@ -29,7 +31,8 @@ import logging
 for logger_name in ['test', 'snowflake.connector', 'botocore']:
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.DEBUG)
-    ch = logging.FileHandler('/tmp/python_connector.log')
+    ch = logging.FileHandler(
+        path.join(tempfile.gettempdir(), 'python_connector.log'))
     ch.setLevel(logging.DEBUG)
     ch.setFormatter(logging.Formatter(
         '%(asctime)s - %(threadName)s %(filename)s:%(lineno)d - %(funcName)s() - %(levelname)s - %(message)s'))
