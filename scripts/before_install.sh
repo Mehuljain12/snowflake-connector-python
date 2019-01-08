@@ -12,9 +12,15 @@ if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     pyenv install ${PYTHON_VERSION}
     export PYENV_VERSION=$PYTHON
     export PATH="${HOME}/.pyenv/shims:${PATH}"
+    if [[ $PYTHON_VERSION == "2.7"* ]]; then
+        pip install -U virtualenv
+        python -m virtualenv venv
+    else
+        python3 -m venv venv
+    fi
 else
     sudo apt-get update
-    openssl aes-256-cbc -k "$super_secret_password" -in parameters.py.enc -out test/parameters.py -d
+    pip install -U virtualenv
+    python -m virtualenv venv
 fi
-
-pip --version
+openssl aes-256-cbc -k "$super_secret_password" -in parameters.py.enc -out test/parameters.py -d
