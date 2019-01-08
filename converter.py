@@ -102,15 +102,25 @@ def _convert_time_to_epoch_nanoseconds(tm):
            "{:06d}".format(tm.microsecond) + u'000'
 
 
+def _extract_timestamp(value, ctx):
+    """
+    Extracts timestamp from a raw data
+    """
+    scale = ctx['scale']
+    microseconds = float(
+        value[0:-scale + 6]) if scale > 6 else float(value)
+    fraction_of_nanoseconds = SnowflakeConverter._adjust_fraction_of_nanoseconds(
+        value, ctx['max_fraction'], scale)
+
+    return microseconds, fraction_of_nanoseconds
+
+
 class SnowflakeConverter(object):
     def __init__(self, **kwargs):
         self._parameters = {}
-        self._use_sfbinaryformat = kwargs.get('use_sfbinaryformat', False)
         self._use_numpy = kwargs.get('use_numpy', False) and numpy is not None
 
-        logger.debug('use_sfbinaryformat: %s, use_numpy: %s',
-                     self._use_sfbinaryformat,
-                     self._use_numpy)
+        logger.debug('use_numpy: %s', self._use_numpy)
 
     def set_parameters(self, parameters):
         self._parameters = {}
@@ -241,18 +251,6 @@ class SnowflakeConverter(object):
         """
         return lambda x: numpy.datetime64(int(x), 'D')
 
-    def _extract_timestamp(self, value, ctx):
-        """
-        Extracts timestamp from a raw data
-        """
-        scale = ctx['scale']
-        microseconds = float(
-            value[0:-scale + 6]) if scale > 6 else float(value)
-        fraction_of_nanoseconds = SnowflakeConverter._adjust_fraction_of_nanoseconds(
-            value, ctx['max_fraction'], scale)
-
-        return microseconds, fraction_of_nanoseconds
-
     def _TIMESTAMP_TZ_to_python(self, ctx):
         """
         TIMESTAMP TZ to datetime
@@ -325,8 +323,7 @@ class SnowflakeConverter(object):
         This takes consideration of the session parameter TIMEZONE if
         available. If not, tzlocal is used
         """
-        microseconds, fraction_of_nanoseconds = \
-            self._extract_timestamp(value, ctx)
+        microseconds, fraction_of_nanoseconds = _extract_timestamp(value, ctx)
         tzinfo_value = self._get_session_tz()
 
         try:
