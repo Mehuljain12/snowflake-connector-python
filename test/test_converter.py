@@ -9,7 +9,7 @@ from datetime import timedelta, time
 import pytest
 import pytz
 
-from snowflake.connector.compat import PY2
+from snowflake.connector.compat import PY2, IS_WINDOWS
 from snowflake.connector.converter import (SnowflakeConverter, ZERO_EPOCH)
 from snowflake.connector.converter_snowsql import (SnowflakeConverterSnowSQL)
 
@@ -344,7 +344,7 @@ SELECT
         assert ret[1] == r1
 
 
-@pytest.mark.skipif(PY2, reason="year out of range error")
+@pytest.mark.skipif(PY2 or IS_WINDOWS, reason="year out of range error")
 def test_five_or_more_digit_year_date_converter(conn_cnx):
     """
     Past and future dates

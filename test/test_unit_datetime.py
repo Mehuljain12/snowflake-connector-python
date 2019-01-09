@@ -3,12 +3,13 @@
 #
 # Copyright (c) 2012-2018 Snowflake Computing Inc. All right reserved.
 #
+import pytest
 import time
 from datetime import datetime
-
+from snowflake.connector.compat import IS_WINDOWS
 from snowflake.connector.sfdatetime import (
-SnowflakeDateTimeFormat,
-SnowflakeDateTime
+    SnowflakeDateTimeFormat,
+    SnowflakeDateTime
 )
 
 
@@ -86,6 +87,9 @@ def test_struct_time_format():
         datetime_class=SnowflakeDateTime)
     assert formatter.format(value) == '2001-09-30T11:20:30'
 
+
+@pytest.mark.skipif(IS_WINDOWS, reason='not supported yet')
+def test_struct_time_format_extreme_large():
     # extreme large epoch time
     value = SnowflakeDateTime(
         time.gmtime(14567890123567), nanosecond=0, scale=1)

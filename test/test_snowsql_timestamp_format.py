@@ -4,10 +4,15 @@
 # Copyright (c) 2012-2018 Snowflake Computing Inc. All right reserved.
 #
 from snowflake.connector.converter_snowsql import SnowflakeConverterSnowSQL
+from snowflake.connector.compat import IS_WINDOWS
+import pytest
 
 
 # DY, DD MON YYYY HH24:MI:SS TZHTZM
 
+@pytest.mark.skipif(
+    IS_WINDOWS,
+    reason="Windows doesn't support more than 9999 yeers")
 def test_snowsql_timestamp_format(conn_cnx):
     """
     In SnowSQL, OverflowError should not happen

@@ -7,6 +7,7 @@
 import time
 from datetime import timedelta, datetime
 from logging import getLogger
+import pytz
 
 from .compat import TO_UNICODE
 from .constants import (is_timestamp_type_name, is_date_type_name)
@@ -145,7 +146,13 @@ class SnowflakeConverterSnowSQL(SnowflakeConverter):
             microseconds = float(value)
             tzinfo = SnowflakeConverter._generate_tzinfo_from_tzoffset(
                 int(tz) - 1440)
-            t = datetime.fromtimestamp(microseconds, tz=tzinfo)
+            try:
+                t = datetime.fromtimestamp(microseconds, tz=tzinfo)
+            except OSError:
+                t = ZERO_EPOCH + timedelta(seconds=microseconds)
+                if pytz.utc != tzinfo:
+                    t += tzinfo.utcoffset(t, is_dst=False)
+                t = t.replace(tzinfo=tzinfo)
             fraction_of_nanoseconds = SnowflakeConverter._adjust_fraction_of_nanoseconds(
                 value, max_fraction, scale)
 
@@ -156,7 +163,14 @@ class SnowflakeConverterSnowSQL(SnowflakeConverter):
             microseconds = float(value[0:-scale + 6])
             tzinfo = SnowflakeConverter._generate_tzinfo_from_tzoffset(
                 int(tz) - 1440)
-            t = datetime.fromtimestamp(microseconds, tz=tzinfo)
+            try:
+                t = datetime.fromtimestamp(microseconds, tz=tzinfo)
+            except OSError:
+                t = ZERO_EPOCH + timedelta(seconds=microseconds)
+                if pytz.utc != tzinfo:
+                    t += tzinfo.utcoffset(t, is_dst=False)
+                t = t.replace(tzinfo=tzinfo)
+
             fraction_of_nanoseconds = SnowflakeConverter._adjust_fraction_of_nanoseconds(
                 value, max_fraction, scale)
 
@@ -178,6 +192,7 @@ class SnowflakeConverterSnowSQL(SnowflakeConverter):
 
         No timezone info is attached.
         """
+
         def conv(value):
             microseconds, fraction_of_nanoseconds = \
                 _extract_timestamp(value, ctx)
