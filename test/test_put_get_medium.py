@@ -611,7 +611,7 @@ def _huge_value_json_upload(tmpdir, conn_cnx, db_parameters):
 
 
 @pytest.mark.skipif(
-    os.getenv('TRAVIS') == 'true',
+    os.getenv('TRAVIS') == 'true' or os.getenv('APPVEYOR'),
     reason="Flaky tests. Need further investigation"
 )
 def test_put_get_large_files_s3(tmpdir, test_files, conn_cnx, db_parameters):
