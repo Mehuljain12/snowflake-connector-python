@@ -40,6 +40,8 @@ logger = getLogger(__name__)
 
 if os.getenv('TRAVIS') == 'true':
     TEST_SCHEMA = 'TRAVIS_JOB_{0}'.format(os.getenv('TRAVIS_JOB_ID'))
+elif os.getenv('APPVEYOR') == 'True':
+    TEST_SCHEMA = 'APPVEYOR_JOB_{0}'.format(os.getenv('APPVEYOR_BUILD_ID'))
 else:
     TEST_SCHEMA = 'python_connector_tests_' + TO_UNICODE(uuid.uuid4()).replace(
         '-', '_')
