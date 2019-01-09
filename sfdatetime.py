@@ -327,6 +327,7 @@ class SnowflakeDateTimeFormat(object):
                     ]
                 )
             elif ch == u'T':
+                # ignore TZ format if data type doesn't have TZ.
                 idx += self._match_token(
                     u_sql_format[idx:],
                     [

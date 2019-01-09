@@ -151,8 +151,7 @@ class SnowflakeConverterSnowSQL(SnowflakeConverter):
                 t = datetime.fromtimestamp(microseconds, tz=tzinfo)
             except OSError as e:
                 logger.debug(
-                    "OSError occurred but falling back to datetime"
-                    "calculations: %s", e)
+                    "OSError occurred but falling back to datetime: %s", e)
                 t = ZERO_EPOCH + timedelta(seconds=microseconds)
                 if pytz.utc != tzinfo:
                     t += tzinfo.utcoffset(t, is_dst=False)
@@ -171,8 +170,7 @@ class SnowflakeConverterSnowSQL(SnowflakeConverter):
                 t = datetime.fromtimestamp(microseconds, tz=tzinfo)
             except OSError as e:
                 logger.debug(
-                    "OSError occurred but falling back to datetime"
-                    "calculations: %s", e)
+                    "OSError occurred but falling back to datetime: %s", e)
                 t = ZERO_EPOCH + timedelta(seconds=microseconds)
                 if pytz.utc != tzinfo:
                     t += tzinfo.utcoffset(t, is_dst=False)
@@ -207,8 +205,7 @@ class SnowflakeConverterSnowSQL(SnowflakeConverter):
                 t = time.gmtime(microseconds)
             except OSError as e:
                 logger.debug(
-                    "OSError occurred but falling back to datetime"
-                    "calculations: %s", e)
+                    "OSError occurred but falling back to datetime: %s", e)
                 t = ZERO_EPOCH + timedelta(seconds=(microseconds))
             return format_sftimestamp(ctx, t, fraction_of_nanoseconds)
 
