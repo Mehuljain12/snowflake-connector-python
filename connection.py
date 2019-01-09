@@ -131,7 +131,7 @@ DEFAULT_CONFIGURATION = {
     u'timezone': None,  # snowflake
     u'consent_cache_id_token': True,  # snowflake
     u'service_name': None,  # snowflake,
-    u'support_negative_year': False  # snowflake
+    u'support_negative_year': True  # snowflake
 }
 
 APPLICATION_RE = re.compile(r'[\w\d_]+')
