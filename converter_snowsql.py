@@ -5,23 +5,28 @@
 #
 
 import time
-from datetime import timedelta, datetime, date
+from datetime import timedelta, datetime
 from logging import getLogger
 
 from .compat import TO_UNICODE
-from .constants import is_timestamp_type_name
-from .converter import (SnowflakeConverter, ZERO_EPOCH)
+from .constants import (is_timestamp_type_name, is_date_type_name)
+from .converter import (SnowflakeConverter, ZERO_EPOCH, _extract_timestamp)
 from .sfbinaryformat import (binary_to_python, SnowflakeBinaryFormat)
-from .sfdatetime import (SnowflakeDateTimeFormat, SnowflakeDateTime)
+from .sfdatetime import (
+    SnowflakeDateTimeFormat,
+    SnowflakeDateFormat,
+    SnowflakeDateTime)
 
 logger = getLogger(__name__)
 
 
 def format_sftimestamp(ctx, value, franction_of_nanoseconds):
     sf_datetime = SnowflakeDateTime(
-        value, nanosecond=franction_of_nanoseconds, scale=ctx.get('scale'))
-    return ctx['fmt'].format(sf_datetime) if ctx.get('fmt') else TO_UNICODE(
-        sf_datetime)
+        value,
+        nanosecond=franction_of_nanoseconds,
+        scale=ctx.get('scale'))
+    return ctx['fmt'].format(sf_datetime) if ctx.get('fmt') else \
+        TO_UNICODE(sf_datetime)
 
 
 class SnowflakeConverterSnowSQL(SnowflakeConverter):
@@ -33,9 +38,8 @@ class SnowflakeConverterSnowSQL(SnowflakeConverter):
     """
 
     def __init__(self, **kwargs):
-        super(SnowflakeConverterSnowSQL, self).__init__(
-            use_sfbinaryformat=True)
-        logger.debug('initialized')
+        super(SnowflakeConverterSnowSQL, self).__init__(**kwargs)
+        self._support_negative_year = kwargs.get('support_negative_year', True)
 
     def _get_format(self, type_name):
         """
@@ -65,9 +69,16 @@ class SnowflakeConverterSnowSQL(SnowflakeConverter):
             ctx['max_fraction'] = int(10 ** ctx['scale'])
             ctx['zero_fill'] = '0' * (9 - ctx['scale'])
         fmt = None
-        if is_timestamp_type_name(type_name):
+        if is_date_type_name(type_name):
+            fmt = SnowflakeDateFormat(
+                self._get_format(type_name),
+                support_negative_year=self._support_negative_year,
+                datetime_class=SnowflakeDateTime
+            )
+        elif is_timestamp_type_name(type_name):
             fmt = SnowflakeDateTimeFormat(
                 self._get_format(type_name),
+                support_negative_year=self._support_negative_year,
                 datetime_class=SnowflakeDateTime)
         elif type_name == u'BINARY':
             fmt = SnowflakeBinaryFormat(self._get_format(type_name))
@@ -114,15 +125,8 @@ class SnowflakeConverterSnowSQL(SnowflakeConverter):
         """
 
         def conv(value):
-            try:
-                t = datetime.utcfromtimestamp(int(value) * 86400).date()
-            except OSError as e:
-                logger.debug("Failed to convert: %s", e)
-                ts = ZERO_EPOCH + timedelta(
-                    seconds=int(value) * (24 * 60 * 60))
-                t = date(ts.year, ts.month, ts.day)
-            return ctx['fmt'].format(SnowflakeDateTime(
-                t, nanosecond=0, scale=0))
+            t = time.gmtime(int(value) * (24 * 60 * 60))
+            return ctx['fmt'].format(SnowflakeDateTime(t))
 
         return conv
 
@@ -174,10 +178,9 @@ class SnowflakeConverterSnowSQL(SnowflakeConverter):
 
         No timezone info is attached.
         """
-
         def conv(value):
             microseconds, fraction_of_nanoseconds = \
-                self._extract_timestamp(value, ctx)
+                _extract_timestamp(value, ctx)
             try:
                 t = ZERO_EPOCH + timedelta(seconds=(microseconds))
             except OverflowError:
