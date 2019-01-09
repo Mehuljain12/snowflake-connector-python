@@ -34,7 +34,7 @@ SELECT
     '2001-09-30 12:34:56.00123400'::timestamp_ntz(8)
 """).fetchone()
         assert ret[0] == 'Thu, 30 Sep 19999 19:34:56 +0000'
-        assert ret[1] == 'Thu, 30 Sep 19999 12:34:56 +0000'
+        assert ret[1] == 'Thu, 30 Sep 19999 12:34:56 '
 
         # The last space is included as TZHTZM is an empty value if
         # datatype is datetime.
