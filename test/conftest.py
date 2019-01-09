@@ -266,10 +266,19 @@ def generate_k_lines_of_n_files(tmpdir, k, n, compress=False):
                     ratio)
                 f.write(rec + "\n")
         if compress:
-            subprocess.Popen(
-                ['gzip', os.path.join(tmp_dir, 'file{0}'.format(i))],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE).communicate()
+            if not IS_WINDOWS:
+                subprocess.Popen(
+                    ['gzip', os.path.join(tmp_dir, 'file{0}'.format(i))],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE).communicate()
+            else:
+                import gzip
+                import shutil
+                fname = os.path.join(tmp_dir, 'file{0}'.format(i))
+                with open(fname, 'rb') as f_in, \
+                        gzip.open(fname + '.gz', 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+                os.unlink(fname)
     return tmp_dir
 
 
