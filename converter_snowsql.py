@@ -79,6 +79,7 @@ class SnowflakeConverterSnowSQL(SnowflakeConverter):
         elif is_timestamp_type_name(type_name):
             fmt = SnowflakeDateTimeFormat(
                 self._get_format(type_name),
+                data_type=type_name,
                 support_negative_year=self._support_negative_year,
                 datetime_class=SnowflakeDateTime)
         elif type_name == u'BINARY':
@@ -148,7 +149,10 @@ class SnowflakeConverterSnowSQL(SnowflakeConverter):
                 int(tz) - 1440)
             try:
                 t = datetime.fromtimestamp(microseconds, tz=tzinfo)
-            except OSError:
+            except OSError as e:
+                logger.debug(
+                    "OSError occurred but falling back to datetime"
+                    "calculations: %s", e)
                 t = ZERO_EPOCH + timedelta(seconds=microseconds)
                 if pytz.utc != tzinfo:
                     t += tzinfo.utcoffset(t, is_dst=False)
@@ -165,7 +169,10 @@ class SnowflakeConverterSnowSQL(SnowflakeConverter):
                 int(tz) - 1440)
             try:
                 t = datetime.fromtimestamp(microseconds, tz=tzinfo)
-            except OSError:
+            except OSError as e:
+                logger.debug(
+                    "OSError occurred but falling back to datetime"
+                    "calculations: %s", e)
                 t = ZERO_EPOCH + timedelta(seconds=microseconds)
                 if pytz.utc != tzinfo:
                     t += tzinfo.utcoffset(t, is_dst=False)
@@ -197,13 +204,12 @@ class SnowflakeConverterSnowSQL(SnowflakeConverter):
             microseconds, fraction_of_nanoseconds = \
                 _extract_timestamp(value, ctx)
             try:
-                t = ZERO_EPOCH + timedelta(seconds=(microseconds))
-            except OverflowError:
-                logger.debug(
-                    "OverflowError in converting from epoch time to datetime:"
-                    " %s(ms). Falling back to use struct_time.",
-                    microseconds)
                 t = time.gmtime(microseconds)
+            except OSError as e:
+                logger.debug(
+                    "OSError occurred but falling back to datetime"
+                    "calculations: %s", e)
+                t = ZERO_EPOCH + timedelta(seconds=(microseconds))
             return format_sftimestamp(ctx, t, fraction_of_nanoseconds)
 
         return conv

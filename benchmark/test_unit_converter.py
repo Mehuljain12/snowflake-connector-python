@@ -5,8 +5,6 @@
 #
 from logging import getLogger
 
-import pytest
-
 from snowflake.connector.converter_snowsql import SnowflakeConverterSnowSQL
 
 logger = getLogger(__name__)

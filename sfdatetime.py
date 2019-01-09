@@ -210,10 +210,12 @@ class SnowflakeDateTimeFormat(object):
     def __init__(
             self,
             sql_format,
+            data_type=u'TIMESTAMP_NTZ',
             datetime_class=datetime,
             support_negative_year=True,
             inject_fraction=True):
         self._sql_format = sql_format
+        self._ignore_tz = data_type in (u'TIMESTAMP_NTZ', u'DATE')
         if datetime_class == datetime:
             self._support_negative_year_method = _support_negative_year_datetime
         else:
@@ -258,10 +260,11 @@ class SnowflakeDateTimeFormat(object):
             return value.isoformat()
         return value.strftime(fmt)
 
-    def _match_token(self, sql_fmt, candidates):
+    def _match_token(self, sql_fmt, candidates, ignore=False):
         for c in candidates:
             if sql_fmt.startswith(c[0]):
-                self._elements.append((_inject_others, c[1]))
+                if not ignore:
+                    self._elements.append((_inject_others, c[1]))
                 return len(c[0])
         self._add_raw_char(sql_fmt[0])
         return 1
@@ -331,7 +334,8 @@ class SnowflakeDateTimeFormat(object):
                         ElementType[u'TZOffsetHourMin_ElementType'],
                         ElementType[u'TZOffsetHourOnly_ElementType'],
                         ElementType[u'TZAbbr_ElementType'],
-                    ]
+                    ],
+                    ignore=self._ignore_tz,
                 )
             elif ch == u'Y':
                 idx += self._match_token(
