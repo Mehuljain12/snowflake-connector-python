@@ -238,19 +238,19 @@ def generate_k_lines_of_n_files(tmpdir, k, n, compress=False):
             for j in range(k):
                 num = int(random.random() * 10000.0)
                 tm = time.gmtime(
-                    int(random.random() * 3000000000.0) - 1500000000)
+                    int(random.random() * 30000.0) - 15000)
                 dt = time.strftime('%Y-%m-%d', tm)
                 tm = time.gmtime(
-                    int(random.random() * 3000000000.0) - 1500000000)
+                    int(random.random() * 30000.0) - 15000)
                 ts = time.strftime('%Y-%m-%d %H:%M:%S', tm)
                 tm = time.gmtime(
-                    int(random.random() * 3000000000.0) - 1500000000)
+                    int(random.random() * 30000.0) - 15000)
                 tsltz = time.strftime('%Y-%m-%d %H:%M:%S', tm)
                 tm = time.gmtime(
-                    int(random.random() * 3000000000.0) - 1500000000)
+                    int(random.random() * 30000.0) - 15000)
                 tsntz = time.strftime('%Y-%m-%d %H:%M:%S', tm)
                 tm = time.gmtime(
-                    int(random.random() * 3000000000.0) - 1500000000)
+                    int(random.random() * 30000.0) - 15000)
                 tstz = time.strftime('%Y-%m-%dT%H:%M:%S', tm) + \
                        ('-' if random.random() < 0.5 else '+') + \
                        "{0:02d}:{1:02d}".format(
