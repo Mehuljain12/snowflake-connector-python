@@ -17,8 +17,7 @@ from .errorcode import (
 from .errors import (ProgrammingError)
 from .sfbinaryformat import (binary_to_python,
                              binary_to_snowflake)
-from .sfdatetime import (sfdatetime_total_seconds_from_timedelta,
-                         sfdatetime_to_snowflake)
+from .sfdatetime import sfdatetime_total_seconds_from_timedelta
 
 try:
     import numpy
@@ -618,9 +617,6 @@ class SnowflakeConverter(object):
                 hour=value.hour, minute=value.minute,
                 second=value.second
             )
-
-    def _sfdatetime_to_snowflake(self, value):
-        return sfdatetime_to_snowflake(value)
 
     def date_to_snowflake(self, value):
         """

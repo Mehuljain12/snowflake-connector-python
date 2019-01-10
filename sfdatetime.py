@@ -4,13 +4,10 @@
 # Copyright (c) 2012-2018 Snowflake Computing Inc. All right reserved.
 #
 import time
+from collections import namedtuple
 from datetime import timedelta, datetime
 
-import pytz
-
 from .compat import TO_UNICODE
-from .constants import UTF8
-from .mixin import UnicodeMixin
 
 ZERO_TIMEDELTA = timedelta(0)
 
@@ -42,100 +39,8 @@ def sfdatetime_total_seconds_from_timedelta(td):
             td.seconds + td.days * 24 * 3600) * 10 ** 6) // 10 ** 6
 
 
-def sfdatetime_to_snowflake(value):
-    dt = value.datetime
-    nanosecond = value.nanosecond
-
-    if isinstance(dt, time.struct_time):
-        if nanosecond:
-            return (
-                u'{year:d}-{month:02d}-{day:02d} '
-                u'{hour:02d}:{minute:02d}:{second:02d}.'
-                u'{nanosecond:d}').format(
-                year=dt.tm_year, month=dt.tm_mon, day=dt.tm_mday,
-                hour=dt.tm_hour, minute=dt.tm_min, second=dt.tm_sec,
-                nanosecond=nanosecond
-            )
-        return (
-            u'{year:d}-{month:02d}-{day:02d} '
-            u'{hour:02d}:{minute:02d}:{second:02d}').format(
-            year=dt.year, month=dt.month, day=dt.day,
-            hour=dt.hour, minute=dt.minute, second=dt.second
-        )
-    else:
-        tzinfo = dt.tzinfo
-        if tzinfo:
-            if pytz.utc != tzinfo:
-                td = tzinfo.utcoffset(dt, is_dst=False)
-            else:
-                td = ZERO_TIMEDELTA
-            sign = u'+' if td >= ZERO_TIMEDELTA else u'-'
-            td_secs = sfdatetime_total_seconds_from_timedelta(td)
-            h, m = divmod(abs(td_secs // 60), 60)
-            if nanosecond:
-                return (u'{year:d}-{month:02d}-{day:02d} '
-                        u'{hour:02d}:{minute:02d}:{second:02d}.'
-                        u'{nanosecond:d}{sign}{tzh:02d}:{tzm:02d}').format(
-                    year=dt.year, month=dt.month, day=dt.day,
-                    hour=dt.hour, minute=dt.minute, second=dt.second,
-                    nanosecond=nanosecond, sign=sign, tzh=h, tzm=m
-                )
-            return (
-                u'{year:d}-{month:02d}-{day:02d} '
-                u'{hour:02d}:{minute:02d}:{second:02d}'
-                u'{sign}{tzh:02d}:{tzm:02d}').format(
-                year=dt.year, month=dt.month, day=dt.day,
-                hour=dt.hour, minute=dt.minute, second=dt.second, sign=sign,
-                tzh=h,
-                tzm=m
-            )
-        else:
-            if nanosecond:
-                return (
-                    u'{year:d}-{month:02d}-{day:02d} '
-                    u'{hour:02d}:{minute:02d}:{second:02d}.'
-                    u'{nanosecond:d}').format(
-                    year=dt.year, month=dt.month, day=dt.day,
-                    hour=dt.hour, minute=dt.minute, second=dt.second,
-                    nanosecond=nanosecond
-                )
-            return (
-                u'{year:d}-{month:02d}-{day:02d} '
-                u'{hour:02d}:{minute:02d}:{second:02d}').format(
-                year=dt.year, month=dt.month, day=dt.day,
-                hour=dt.hour, minute=dt.minute, second=dt.second
-            )
-
-
-class SnowflakeDateTime(UnicodeMixin):
-    """
-    Snowflake DateTime class.
-
-    The difference to the native datetime class is Snowflake supports up to
-    nanoseconds precision.
-    """
-
-    def __init__(self, ts, nanosecond=0, scale=0):
-        self._datetime = ts
-        self._nanosecond = nanosecond
-        self._scale = scale
-
-    @property
-    def datetime(self):
-        return self._datetime
-
-    @property
-    def nanosecond(self):
-        return self._nanosecond
-
-    def __repr__(self):
-        return self.__str__()
-
-    def __unicode__(self):
-        return sfdatetime_to_snowflake(self)
-
-    def __bytes__(self):
-        return self.__unicode__().encode(UTF8)
+SnowflakeDateTime = namedtuple(
+    'SnowflakeDateTime', 'datetime nanosecond scale')
 
 
 def _support_negative_year(value, year_len):
@@ -193,9 +98,9 @@ def _inject_fraction(value, fraction_len):
     else:
         # no length of FF is specified
         nano_value = nano_str.format(fraction)
-        if hasattr(value, '_scale'):
+        if hasattr(value, 'scale'):
             # but scale is specified
-            nano_value = nano_value[:value._scale]
+            nano_value = nano_value[:value.scale]
     return nano_value
 
 

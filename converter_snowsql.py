@@ -24,7 +24,7 @@ logger = getLogger(__name__)
 
 def format_sftimestamp(ctx, value, franction_of_nanoseconds):
     sf_datetime = SnowflakeDateTime(
-        value,
+        datetime=value,
         nanosecond=franction_of_nanoseconds,
         scale=ctx.get('scale'))
     return ctx['fmt'].format(sf_datetime) if ctx.get('fmt') else \
