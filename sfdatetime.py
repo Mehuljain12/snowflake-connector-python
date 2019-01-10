@@ -111,7 +111,7 @@ class SnowflakeDateTime(UnicodeMixin):
     """
     Snowflake DateTime class.
 
-    The differene to the native datetime class is Snowflake supports up to
+    The difference to the native datetime class is Snowflake supports up to
     nanoseconds precision.
     """
 
@@ -155,7 +155,15 @@ def _build_year_format(dt, year_len):
     else:
         # struct_time
         year_raw_value = dt.tm_year
+    return _build_raw_year_format(year_raw_value, year_len)
 
+
+def _support_negative_year_struct_time(dt, year_len):
+    # struct_time
+    return _build_raw_year_format(dt.tm_year, year_len)
+
+
+def _build_raw_year_format(year_raw_value, year_len):
     sign_char = u''
     if year_raw_value < 0:
         sign_char = u'-'
@@ -198,6 +206,7 @@ def _inject_others(_, value0):
 NOT_OTHER_FORMAT = {
     _support_negative_year,
     _support_negative_year_datetime,
+    _support_negative_year_struct_time,
     _inject_fraction
 }
 
@@ -218,6 +227,8 @@ class SnowflakeDateTimeFormat(object):
         self._ignore_tz = data_type in (u'TIMESTAMP_NTZ', u'DATE')
         if datetime_class == datetime:
             self._support_negative_year_method = _support_negative_year_datetime
+        elif datetime_class == time.struct_time:
+            self._support_negative_year_method = _support_negative_year_struct_time
         else:
             self._support_negative_year_method = _support_negative_year
 
@@ -428,9 +439,9 @@ class SnowflakeDateFormat(SnowflakeDateTimeFormat):
         kwargs['inject_fraction'] = False  # no fraction
         super(SnowflakeDateFormat, self).__init__(sql_format, **kwargs)
 
-    def _format_SnowflakeDateTime(self, value):
+    def _format_struct_time(self, value):
         """
-        Formats SnowflakeDateTime object
+        Formats struct_time
         """
         fmt = self._pre_format(value)
-        return TO_UNICODE(time.strftime(fmt, value.datetime))
+        return TO_UNICODE(time.strftime(fmt, value))

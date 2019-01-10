@@ -7,6 +7,7 @@
 import time
 from datetime import timedelta, datetime
 from logging import getLogger
+
 import pytz
 
 from .compat import TO_UNICODE
@@ -74,8 +75,7 @@ class SnowflakeConverterSnowSQL(SnowflakeConverter):
             fmt = SnowflakeDateFormat(
                 self._get_format(type_name),
                 support_negative_year=self._support_negative_year,
-                datetime_class=SnowflakeDateTime
-            )
+                datetime_class=time.struct_time)
         elif is_timestamp_type_name(type_name):
             fmt = SnowflakeDateTimeFormat(
                 self._get_format(type_name),
@@ -125,10 +125,8 @@ class SnowflakeConverterSnowSQL(SnowflakeConverter):
 
         No timezone is attached.
         """
-
         def conv(value):
-            t = time.gmtime(int(value) * (24 * 60 * 60))
-            return ctx['fmt'].format(SnowflakeDateTime(t))
+            return ctx['fmt'].format(time.gmtime(int(value) * (24 * 60 * 60)))
 
         return conv
 
